@@ -1,0 +1,213 @@
+Vue.filter('decim', function (value) {
+    if (!value) return ''
+
+    return Number(value).toFixed(2);
+})
+
+$(document).ready(function () {
+    new Vue({
+        el: '#js-table',
+        data: {
+            connectedWs:false,
+            ws: null,
+            coins: {
+                'BTCUSDT':{
+                    class: "d-none",
+                    coinName: "Bitcoin",
+                    label: "BTC/USD",
+                    data:[]
+                },
+                'ETHUSDT':{
+                    class: "d-none",
+                    coinName: "Ethereum",
+                    label: "ETH/USD",
+                    data:[]
+                },
+                'BCHABCUSDT':{
+                    class: "d-none",
+                    coinName: "BitCoin Cash",
+                    label: "BCH/USD",
+                    data:[]
+                },
+                'ETHBTC':{
+                    class: "d-none",
+                    coinName: "Ethereum",
+                    label: "ETH/BTC",
+                    data:[]
+                },
+                'BCHABCBTC':{
+                    class: "d-none",
+                    coinName: "BitCoin Cash",
+                    label: "BCH/BTC",
+                    data:[]
+                },
+            }
+        },
+        created: function () {
+            var self = this;
+            var prices = window.Prices;
+
+            prices.forEach(function (el,index) {
+                self.coins[el.symbol].data.push(el);
+                self.coins[el.symbol].class = "";
+            });
+            if(prices.length > 0 )
+            {
+                self.connectedWs = true;
+            }
+            self.connectWs();
+
+        },
+        computed: {
+
+        },
+        mounted: function () {
+
+        },
+        methods: {
+            getDelay: function(index){
+              var time = 0.5;
+              time = time + 0.2 * index;
+              time += 's';
+              return time;
+            },
+            getSymbol: function(coin){
+                switch (coin) {
+                    case "BTCUSDT":
+                        return "BTC";
+                        break;
+                    case "ETHUSDT":
+                        return "ETH";
+                        break;
+                    case "BCHABCUSDT":
+                        return "BCH";
+                        break;
+                    case "ETHBTC":
+                        return "ETH";
+                        break;
+                    case "BCHABCBTC":
+                        return "BCH";
+                        break;
+                    default:
+                        return "";
+                }
+            },
+            getDollar: function(coin){
+                var self = this;
+
+                switch (coin) {
+                    case "BTCUSDT":
+                        var data = self.coins.BTCUSDT.data;
+                        break;
+                    case "ETHUSDT":
+                        var data = self.coins.ETHUSDT.data;
+                        break;
+                    case "BCHABCUSDT":
+                        var data = self.coins.BCHABCUSDT.data;
+                        break;
+                    case "ETHBTC":
+                        var data = self.coins.ETHUSDT.data;
+                        break;
+                    case "BCHABCBTC":
+                        var data = self.coins.BCHABCUSDT.data;
+                        break;
+                    default:
+                        return "";
+
+
+                }
+
+                if(data.length < 1)
+                    return null;
+                var item = data[data.length - 1];
+
+                return item.price;
+            },
+            getData: function(coin)
+            {
+                var self = this;
+
+                var data = self.coins[coin].data;
+                if(data.length < 1)
+                    return null;
+                return data[data.length - 1];
+            },
+            connectWs: function () {
+                var self = this;
+                var loc = window.location, new_uri;
+                if (loc.protocol === "https:") {
+                    new_uri = "wss:";
+                } else {
+                    new_uri = "ws:";
+                }
+                new_uri = "wss://stream.binance.com:9443/stream?streams=!ticker@arr@3000ms";
+                //self.$store.dispatch('connectWs');
+                this.ws = new WebSocket(new_uri);
+
+                this.ws.onopen = function () {
+
+                };
+
+                this.ws.onclose = function (eventclose) {
+
+                    setTimeout(function () {
+                        self.connectWs();
+                    }, 5000)
+                };
+
+                this.ws.onmessage = function (msg)
+                {
+
+                    var result = JSON.parse(msg.data);
+                    result = result.data;
+
+                    result.forEach(function (el,ind)
+                    {
+
+                        switch (el.s) {
+                            case 'BTCUSDT':
+                            case 'ETHUSDT':
+                            case 'BCHABCUSDT':
+                            case 'ETHBTC':
+                            case 'BCHABCBTC':
+                                var data = self.coins[el.s].data;
+
+                                var res = {
+                                    price: el.c,
+                                    high: el.h,
+                                    low: el.l,
+                                    change: el.P
+                                }
+                                self.coins[el.s].data.push(res);
+                                if(data.length > 1)
+                                {
+
+                                    var last = data[data.length - 2];
+
+                                    if(res.price > last.price){
+                                        self.coins[el.s].data[data.length - 1].class= "mt-last-price__up";
+                                        self.coins[el.s].class = "plus";//"d-table-row plus";
+                                    }else if(res.price == last.price){
+                                        self.coins[el.s].class = "";//"d-table-row";
+                                        self.coins[el.s].data[data.length - 1].class= "";
+                                    }
+                                    else {
+                                        self.coins[el.s].data[data.length - 1].class = "mt-last-price__down";
+                                        self.coins[el.s].class = "minus";//"d-table-row minus";
+                                    }
+                                }
+
+
+                                break;
+                        }
+
+                    });
+                    self.connectedWs = true;
+                };
+            },
+
+        }
+
+
+    });
+});

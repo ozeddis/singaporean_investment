@@ -1,0 +1,63 @@
+$(window).on('load scroll', function(){
+    var sPos = $(this).scrollTop();
+        if(sPos >= 50){  
+            $('header').addClass('fixedHeader');          
+        }else{              
+            $('header').removeClass('fixedHeader');          
+        }  
+});
+$(document).ready(function(){   
+    'use stric'   
+    
+    $(window).on('resize', 
+        function(){
+            if( $(this).width() > 768 ) {
+                $('.personal-area__nav').removeAttr('style');
+            }
+        }
+    );
+    $('.dashboard-item__wallets-info input').on('focus',function(){             
+        if(this.value == this.defaultValue){this.select();}
+    });
+    $('[data-copy-key]').on('click', function() {
+	    var group = $(this).attr('data-copy-key');
+        $('input[data-copy-val="'+group+'"]').select();
+	    document.execCommand("copy");
+        $('.activCopy[data-copy-alert="'+group+'"]').fadeIn(250).delay(1000).fadeOut(250);
+	});
+    
+    $('[href^="#"]').on('click',
+        function(e){
+            e.preventDefault();
+        }
+    );
+    
+    $('[href="#navMobile"]').on('click',function(){
+        if($(this).hasClass('active')){
+            $(this).removeClass('active'); 
+            $('header .navbox').removeClass('mobileShow');
+        }else{                                          
+            $(this).addClass('active'); 
+            $('header .navbox').addClass('mobileShow');
+        }
+    }); 
+    $('[href="#personal-area__nav"]').on('click',function(e){
+        if($(this).hasClass('active')){
+            $(this).removeClass('active');
+            $('.personal-area__nav').slideUp(250);
+        }else{
+            $(this).addClass('active');
+            $('.personal-area__nav').slideDown(250);
+        }
+    }); 
+    $('[href="#profileNav"]').on('click',function(){
+        if($(this).hasClass('active')){
+            $(this).removeClass('active'); 
+            $('header .usernav').removeClass('active');
+        }else{                                          
+            $(this).addClass('active'); 
+            $('header .usernav').addClass('active');
+        }
+    });             
+    
+}); 

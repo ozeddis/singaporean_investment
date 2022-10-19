@@ -1,0 +1,168 @@
+$(document).ready(function () {
+
+    $('.js-changetype').on('change',function (e) {
+       if(e.target.value == 1)
+       {
+           $('.js-password').show();
+       }
+       else
+       {
+           $('.js-password').hide();
+       }
+    });
+    $('.js-register').on('click',function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('.modal').modal('hide')
+        $('#registration_modal').modal('show');
+    })
+
+
+
+    $('.js-amount').on('input',function (e) {
+        var val = Number(e.target.value);
+        var string = (val + val/100*0.3).toFixed(8).toString();
+        string = string.replace(/0*$/,"");
+        $('.js-comission').val(string);
+    });
+
+    $('.notification-modal').modal('show');
+
+    $(".js-avatar").change(function() {
+        readURL(this);
+    });
+
+});
+function readURL(input) {
+    if (input.files && input.files[0]) {
+        if (!input.files[0].name.match(/.(jpg|jpeg|png)$/i))
+        {
+            alert('Please set image');
+        }
+        else {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+
+                $('.js-avatar-preview').css('background-image', 'url('+e.target.result +')');
+                $('.js-avatar-preview').hide();
+                $('.js-avatar-preview').fadeIn(650);
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+
+
+    }
+}
+function showTwoFaModal(){
+    var typeModal = $('#type_two_fa').val();
+    if(typeModal == 0){
+        $.ajax('/site/telecode',{
+            type:'POST',
+            success: function (data) {
+                var result = JSON.parse(data);
+                var modal = $('#telegram_two_fa_modal');
+                modal.find('.js-code').php(result.code);
+                modal.modal('show');
+            }
+        })
+
+    }
+}
+function disableTwoFaModal(){
+    var modal = $('#telegram_disable_modal');
+
+    modal.modal('show');
+    $.ajax('/site/telecode',{
+        type:'POST',
+        data:{
+            disable:true
+        },
+        success: function (data) {
+
+            var modal = $('#telegram_disable_modal');
+
+            modal.modal('show');
+        }
+    })
+}
+function confirmTelegramCode(elem) {
+    var data = {};
+    $(elem).closest('form').serializeArray().map(function(x){data[x.name] = x.value;});
+    if(data.code.length < 6)
+    {
+        alert('Set the code please!')
+    }else {
+        $.ajax('/site/disable2fa',{
+            type:'POST',
+            data:data,
+            success: function (data) {
+                var result = JSON.parse(data);
+                if(result.result == true){
+                    location.href = location.href;
+                }else {
+                    alert('Wrong code');
+                }
+            }
+        })
+    }
+}
+function goTimer() {
+    var date = new Date();
+    var newDateObj = moment(date).add(30, 'm').toDate();
+    $('.payment_time').countdown({until: newDateObj, compact: true,
+        format: 'MS', description: ''});
+}
+
+(function() {
+
+    'use strict';
+
+    // define variables
+    var items = document.querySelectorAll(".timeline li");
+
+    // check if an element is in viewport
+    // http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport
+    function isElementInViewport(el) {
+        var rect = el.getBoundingClientRect();
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+    }
+
+    function callbackFunc() {
+        for (var i = 0; i < items.length; i++) {
+            if (isElementInViewport(items[i])) {
+                items[i].classList.add("in-view");
+            }
+        }
+    }
+
+    // listen for events
+    window.addEventListener("load", callbackFunc);
+    window.addEventListener("resize", callbackFunc);
+    window.addEventListener("scroll", callbackFunc);
+
+})();
+
+$(function() {
+    return $(".modal").on("show.bs.modal", function() {
+        var curModal;
+        curModal = this;
+        $(".modal").each(function() {
+            if (this !== curModal) {
+                $(this).modal("hide");
+            }
+        });
+        setTimeout(function () {
+            console.log(1)
+            if(!$('body').hasClass('modal-open')){
+                console.log(2)
+                $('body').addClass('modal-open');
+            }
+        },500)
+
+    });
+});
