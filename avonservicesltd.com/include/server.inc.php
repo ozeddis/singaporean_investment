@@ -1,9 +1,9 @@
 <?php
 session_start();
 $server = "localhost";
-$user = "root";
+$user = "";
 $pwd = "";
-$db = "agrocapitalmanagement";
+$db = "";
 $connection = mysqli_connect($server, $user, $pwd, $db);
 
 if($connection == true){
@@ -15,7 +15,7 @@ if($connection == true){
 }
 
 ?>
-<!--60d6cc13a19c31624689683 pwd...support@agrocapital-management.com for smart-->
+
 <script type="text/javascript">
 (function () {
 var options = {
